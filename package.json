@@ -1,5 +1,5 @@
 {
-  "name": "life-game",
+  "name": "game-of-life",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,9 +10,12 @@
     "lint:fix": "eslint --fix"
   },
   "dependencies": {
+    "@types/three": "^0.182.0",
+    "lucide-react": "^0.562.0",
     "next": "16.1.1",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "three": "^0.182.0"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^7.0.0",
