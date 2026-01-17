@@ -24,6 +24,7 @@ export function useLifeGameEngine({
   // State
   const [gameState, setGameState] = useState<GameState>(GameState.STOPPED)
   const [stats, setStats] = useState<Stats>({ generation: 0 })
+  const [showGrid, setShowGrid] = useState(false)
 
   // Engine Instance
   const engineRef = useRef<GameEngine | null>(null)
@@ -146,6 +147,14 @@ export function useLifeGameEngine({
     engineRef.current?.setColors(alive, dead)
   }, [])
 
+  const toggleGrid = useCallback(() => {
+    setShowGrid((prev) => {
+      const next = !prev
+      engineRef.current?.setGridVisible(next)
+      return next
+    })
+  }, [])
+
   return {
     stats,
     gameState,
@@ -162,5 +171,7 @@ export function useLifeGameEngine({
     resetCamera,
     setGridSize,
     setColors,
+    showGrid,
+    toggleGrid,
   }
 }

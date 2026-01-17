@@ -43,6 +43,8 @@ const LifeGame2D: React.FC = () => {
     resetCamera,
     setGridSize,
     setColors,
+    showGrid,
+    toggleGrid,
   } = useLifeGameEngine({
     mountRef,
     speed,
@@ -135,6 +137,8 @@ const LifeGame2D: React.FC = () => {
             onZoomOut={zoomOut}
             onResetCamera={resetCamera}
             onFullscreen={toggleFullscreen}
+            onToggleGrid={toggleGrid}
+            showGrid={showGrid}
           />
         </div>
       </div>

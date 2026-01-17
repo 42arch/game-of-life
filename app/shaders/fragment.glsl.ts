@@ -5,6 +5,7 @@ export const SIMULATION_FRAGMENT_SHADER = `
   uniform float uBrushSize;
   uniform bool uIsDrawing;
   uniform float uSeed;
+  uniform bool uSimulate;
 
   // Stamping Uniforms
   uniform bool uIsStamping;
@@ -57,21 +58,23 @@ export const SIMULATION_FRAGMENT_SHADER = `
       }
 
       // 3. Game of Life Logic
-      // Neighbors
-      float sum = 
-          get(-1.0, -1.0) + get(0.0, -1.0) + get(1.0, -1.0) +
-          get(-1.0,  0.0) +                  get(1.0,  0.0) +
-          get(-1.0,  1.0) + get(0.0,  1.0) + get(1.0,  1.0);
-
       float current = get(0.0, 0.0);
       float next = current;
 
-      if (current > 0.5) {
-          // Alive
-          if (sum < 1.9 || sum > 3.1) next = 0.0; // Die
-      } else {
-          // Dead
-          if (sum > 2.9 && sum < 3.1) next = 1.0; // Reproduce
+      if (uSimulate) {
+          // Neighbors
+          float sum = 
+              get(-1.0, -1.0) + get(0.0, -1.0) + get(1.0, -1.0) +
+              get(-1.0,  0.0) +                  get(1.0,  0.0) +
+              get(-1.0,  1.0) + get(0.0,  1.0) + get(1.0,  1.0);
+
+          if (current > 0.5) {
+              // Alive
+              if (sum < 1.9 || sum > 3.1) next = 0.0; // Die
+          } else {
+              // Dead
+              if (sum > 2.9 && sum < 3.1) next = 1.0; // Reproduce
+          }
       }
 
       gl_FragColor = vec4(next, 0.0, 0.0, 1.0);
@@ -82,11 +85,21 @@ export const RENDER_FRAGMENT_SHADER = `
   uniform sampler2D tMap;
   uniform vec3 uColorAlive;
   uniform vec3 uColorDead;
+  uniform vec2 uResolution;
+  uniform float uGridVisible;
   varying vec2 vUv;
 
   void main() {
       float state = texture2D(tMap, vUv).r;
       vec3 color = mix(uColorDead, uColorAlive, state);
+
+      if (uGridVisible > 0.5) {
+          vec2 grid = abs(fract(vUv * uResolution - 0.5) - 0.5) / fwidth(vUv * uResolution);
+          float line = min(grid.x, grid.y);
+          float gridVal = 1.0 - min(line, 1.0);
+          color = mix(color, uColorDead * 0.5, gridVal * 0.4);
+      }
+
       gl_FragColor = vec4(color, 1.0);
   }
 `

@@ -121,6 +121,7 @@ export class GameEngine {
         uMouse: { value: new THREE.Vector2(-100, -100) },
         uBrushSize: { value: this.brushSize },
         uIsDrawing: { value: false },
+        uSimulate: { value: false },
 
         // Stamp Uniforms
         uIsStamping: { value: false },
@@ -162,6 +163,8 @@ export class GameEngine {
         tMap: { value: this.fboA.texture },
         uColorAlive: { value: new THREE.Vector3(...COLOR_ALIVE) },
         uColorDead: { value: new THREE.Vector3(...COLOR_DEAD) },
+        uResolution: { value: new THREE.Vector2(TEXTURE_SIZE, TEXTURE_SIZE) },
+        uGridVisible: { value: 0.0 },
       },
       vertexShader: VERTEX_SHADER,
       fragmentShader: RENDER_FRAGMENT_SHADER,
@@ -271,6 +274,10 @@ export class GameEngine {
       this.simMaterial.uniforms.uIsDrawing.value = this.isDrawing
       this.simMaterial.uniforms.uMouse.value = this.mouseUv
       this.simMaterial.uniforms.uBrushSize.value = this.brushSize
+
+      // Only simulate physics if the game is running
+      // If we are just drawing/stamping in pause mode, uSimulate should be false
+      this.simMaterial.uniforms.uSimulate.value = this.isRunning && (delta > interval)
 
       // Handle Stamping
       if (isStamping && this.stampQueue) {
@@ -537,6 +544,11 @@ export class GameEngine {
       this.simMaterial.uniforms.uResolution.value.set(size, size)
     }
 
+    // Update Display Material
+    if (this.displayMaterial) {
+      this.displayMaterial.uniforms.uResolution.value.set(size, size)
+    }
+
     // Initial Render
     if (this.renderer && this.simScene && this.simCamera) {
       this.renderer.setRenderTarget(this.fboA)
@@ -561,5 +573,11 @@ export class GameEngine {
     const dead = new THREE.Color(deadHex)
     this.displayMaterial.uniforms.uColorAlive.value.set(alive.r, alive.g, alive.b)
     this.displayMaterial.uniforms.uColorDead.value.set(dead.r, dead.g, dead.b)
+  }
+
+  public setGridVisible(visible: boolean) {
+    if (this.displayMaterial) {
+      this.displayMaterial.uniforms.uGridVisible.value = visible ? 1.0 : 0.0
+    }
   }
 }
