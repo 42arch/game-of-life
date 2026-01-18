@@ -5,16 +5,20 @@ import {
   Dices,
   Grid3X3,
   LayoutTemplate,
+  Moon,
   Palette,
   PanelRightClose,
   PanelRightOpen,
+  Sun,
 } from 'lucide-react'
+import { useTheme } from 'next-themes'
 import React from 'react'
 import { cn } from '@/lib/utils'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './accordion'
 import { Button } from './button'
 import { Label } from './label'
 import { ScrollArea } from './scroll-area'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select'
 import { Slider } from './slider'
 import { Switch } from './switch'
 
@@ -67,6 +71,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   showStats,
   toggleStats,
 }) => {
+  const { theme, setTheme } = useTheme()
+
   if (!isOpen) {
     return (
       <div className={cn('relative h-full border-l bg-background/95 backdrop-blur-sm transition-all duration-300 w-0 border-none', className)}>
@@ -136,6 +142,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     onValueChange={([v]) => setSpeed(v)}
                     className="py-1"
                   />
+                </div>
+
+                {/* Theme */}
+                <div className="space-y-3">
+                  <Label className="text-xs flex items-center gap-2">
+                    {theme === 'dark' ? <Moon className="h-3 w-3" /> : <Sun className="h-3 w-3" />}
+                    {' '}
+                    Theme Mode
+                  </Label>
+                  <Select value={theme} onValueChange={setTheme}>
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue placeholder="Select theme" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="light">Light</SelectItem>
+                      <SelectItem value="dark">Dark</SelectItem>
+                      <SelectItem value="system">System</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 {/* Random Percentage */}

@@ -1,7 +1,8 @@
 'use client'
 
 import type { PrefabData } from '../constants'
-import React, { useRef, useState } from 'react'
+import { useTheme } from 'next-themes'
+import React, { useEffect, useRef, useState } from 'react'
 import { PREFABS, TEXTURE_SIZE } from '../constants'
 import { useLifeGameEngine } from '../hooks/useLifeGameEngine'
 import { PlaybackControls } from './ui/PlaybackControls'
@@ -10,6 +11,7 @@ import { StatsCard } from './ui/StatsCard'
 import { ViewControls } from './ui/ViewControls'
 
 const LifeGame2D: React.FC = () => {
+  const { theme } = useTheme()
   const mountRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -47,6 +49,7 @@ const LifeGame2D: React.FC = () => {
     setSceneDimensions,
     setColors,
     setRandomPercentage,
+    setBackgroundColor,
     showGrid,
     toggleGrid,
   } = useLifeGameEngine({
@@ -57,6 +60,27 @@ const LifeGame2D: React.FC = () => {
     activePrefab,
     setActivePrefab,
   })
+
+  // Theme Sync
+  useEffect(() => {
+    if (!theme)
+      return
+    const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+
+    // Update Canvas Background
+    const bg = isDark ? '#050505' : '#ffffff'
+    setBackgroundColor(bg)
+
+    // Update Dead Color to match BG if it hasn't been manually changed significantly?
+    // For simplicity, let's just reset colors to defaults on theme switch,
+    // OR we can leave it to the user. The prompt says "implement switch", implying it should switch appearance.
+    const newDead = isDark ? '#050505' : '#ffffff'
+    const newAlive = isDark ? '#2dd4bf' : '#0d9488' // Teal-400 vs Teal-600
+
+    setDeadColor(newDead)
+    setAliveColor(newAlive)
+    setColors(newAlive, newDead)
+  }, [theme, setBackgroundColor, setColors])
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {

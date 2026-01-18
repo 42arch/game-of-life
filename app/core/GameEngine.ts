@@ -655,4 +655,10 @@ export class GameEngine {
   public setRandomPercentage(percentage: number) {
     this.randomPercentage = percentage
   }
+
+  public setBackgroundColor(colorHex: string) {
+    if (this.scene) {
+      this.scene.background = new THREE.Color(colorHex)
+    }
+  }
 }

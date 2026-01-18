@@ -159,6 +159,10 @@ export function useLifeGameEngine({
     engineRef.current?.setRandomPercentage(percentage)
   }, [])
 
+  const setBackgroundColor = useCallback((color: string) => {
+    engineRef.current?.setBackgroundColor(color)
+  }, [])
+
   return {
     stats,
     gameState,
@@ -176,6 +180,7 @@ export function useLifeGameEngine({
     setSceneDimensions,
     setColors,
     setRandomPercentage,
+    setBackgroundColor,
     showGrid,
     toggleGrid,
   }
