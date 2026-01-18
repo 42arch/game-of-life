@@ -38,10 +38,9 @@ export const SIMULATION_FRAGMENT_SHADER = `
               // stampLocalUV.y = 1.0 - stampLocalUV.y; 
               
               float stampVal = texture2D(uStampTexture, stampLocalUV).r;
-              if (stampVal > 0.5) {
-                  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-                  return;
-              }
+              // Make stamp opaque: overwrite whatever is below with the stamp value (0 or 1)
+              gl_FragColor = vec4(stampVal, 0.0, 0.0, 1.0);
+              return;
           }
       }
 

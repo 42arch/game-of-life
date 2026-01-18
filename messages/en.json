@@ -29,6 +29,7 @@
     "actions": "Quick Actions",
     "speed": "Simulation Speed",
     "gensPerSecond": "gen/s",
+    "brushSize": "Brush Size",
     "randomFill": "Random Fill",
     "sceneDimensions": "Scene Dimensions",
     "width": "Width",
@@ -38,6 +39,7 @@
     "dead": "Dead",
     "showGrid": "Show Grid",
     "showStats": "Show Statistics",
+    "showZoomControls": "Show Zoom Controls",
     "themeMode": "Theme Mode",
     "language": "Language",
     "selectTheme": "Select theme",
@@ -51,6 +53,14 @@
       "en": "English",
       "zh": "Chinese"
     },
-    "footer": "is a cellular automaton devised by John Horton Conway. Cells live or die based on their neighbors."
+    "footer": "is a cellular automaton devised by John Horton Conway. Cells live or die based on their neighbors.",
+    "showDetails": "Click to show details.",
+    "rulesTitle": "Game Rules",
+    "rulesIntro": "In the Game of Life, for any cell, the rules are as follows:",
+    "rulesContext": "Each cell has two states - alive or dead, and interacts with the eight neighbors around it.",
+    "rule1": "A live cell with fewer than 2 live neighbors dies (underpopulation).",
+    "rule2": "A live cell with 2 or 3 live neighbors lives on to the next generation.",
+    "rule3": "A live cell with more than 3 live neighbors dies (overpopulation).",
+    "rule4": "A dead cell with exactly 3 live neighbors becomes a live cell (reproduction)."
   }
 }

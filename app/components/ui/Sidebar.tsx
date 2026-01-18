@@ -1,7 +1,7 @@
 import type { PrefabData } from '../../constants'
 import {
   Activity,
-  Car,
+  Brush,
   Cpu,
   Dices,
   Grid3X3,
@@ -11,16 +11,21 @@ import {
   Palette,
   PanelRightClose,
   PanelRightOpen,
+  Ruler,
+  Scan,
   Settings,
   Sun,
+  Zap,
 } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useTheme } from 'next-themes'
 import React from 'react'
 import { usePathname, useRouter } from '@/i18n/routing'
 import { cn } from '@/lib/utils'
+import { RulesDialog } from '../RulesDialog'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './accordion'
 import { Button } from './button'
+import { HoverCard, HoverCardContent, HoverCardTrigger } from './hover-card'
 import { Label } from './label'
 import { ScrollArea } from './scroll-area'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select'
@@ -37,6 +42,8 @@ interface SidebarProps {
   // Controls
   speed: number
   setSpeed: (v: number) => void
+  brushSize: number
+  setBrushSize: (v: number) => void
   sceneWidth: number
   setSceneWidth: (v: number) => void
   sceneHeight: number
@@ -51,6 +58,8 @@ interface SidebarProps {
   toggleGrid: () => void
   showStats: boolean
   toggleStats: () => void
+  showZoomControls: boolean
+  toggleZoomControls: () => void
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -61,6 +70,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onToggle,
   speed,
   setSpeed,
+  brushSize,
+  setBrushSize,
   sceneWidth,
   setSceneWidth,
   sceneHeight,
@@ -75,6 +86,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   toggleGrid,
   showStats,
   toggleStats,
+  showZoomControls,
+  toggleZoomControls,
 }) => {
   const { theme, setTheme } = useTheme()
   const t = useTranslations('Sidebar')
@@ -85,6 +98,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const handleLanguageChange = (newLocale: string) => {
     router.replace(pathname, { locale: newLocale })
   }
+
+  const groupedPrefabs = React.useMemo(() => {
+    const groups: Record<string, PrefabData[]> = {}
+    prefabs.forEach((prefab) => {
+      const category = prefab.category || 'Others'
+      if (!groups[category])
+        groups[category] = []
+      groups[category].push(prefab)
+    })
+    return groups
+  }, [prefabs])
 
   if (!isOpen) {
     return (
@@ -115,11 +139,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Header */}
       <div className="flex flex-col gap-4 p-6 pb-2">
-        <div>
-          <h1 className="text-xl font-bold text-foreground">
-            Game of Life
-          </h1>
-          <p className="text-xs text-muted-foreground">Conway's Game of Life</p>
+        <div className="flex items-center gap-3">
+          {/* Logo - 3x3 Glider Pattern */}
+          <div className="grid grid-cols-3 gap-0.5 p-1 bg-primary/10 rounded-md border border-primary/20 shrink-0">
+            {[0, 1, 0, 0, 0, 1, 1, 1, 1].map((cell, i) => (
+              <div
+                key={i}
+                className={cn(
+                  'w-1.5 h-1.5 rounded-sm transition-colors duration-500',
+                  cell ? 'bg-primary shadow-[0_0_4px_rgba(45,212,191,0.5)]' : 'bg-muted/20',
+                )}
+              />
+            ))}
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-foreground leading-none">
+              Game of Life
+            </h1>
+            <p className="text-[10px] text-muted-foreground mt-1 opacity-80">Conway's Game of Life</p>
+          </div>
         </div>
       </div>
 
@@ -136,34 +174,62 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <span>{t('layouts')}</span>
                 </div>
               </AccordionTrigger>
-              <AccordionContent className="pt-2">
-                <div className="grid grid-cols-2 gap-2">
-                  {prefabs.map(prefab => (
-                    <div
-                      key={prefab.name}
-                      draggable
-                      onDragStart={e => onDragStart(prefab, e)}
-                      className="group relative flex aspect-square flex-col overflow-hidden rounded-md border border-border/50 bg-secondary/10 hover:border-teal-500/50 hover:bg-secondary/20 transition-all cursor-grab active:cursor-grabbing"
-                    >
-                      <div className="flex-1 flex items-center justify-center p-2 opacity-70 group-hover:opacity-100">
-                        <div
-                          className="grid gap-[1px]"
-                          style={{
-                            gridTemplateColumns: `repeat(${prefab.width}, 1fr)`,
-                            width: '70%',
-                            aspectRatio: `${prefab.width}/${prefab.height}`,
-                          }}
-                        >
-                          {prefab.data.map((cell, i) => (
-                            <div
-                              key={i}
-                              className={`${cell ? 'bg-teal-400' : 'bg-muted/20'} w-full h-full rounded-[0.5px]`}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                      <div className="p-1.5 bg-background/50 backdrop-blur-sm border-t border-border/10 text-center">
-                        <span className="block text-[10px] font-medium truncate">{prefab.name}</span>
+              <AccordionContent className="pt-2 px-2">
+                <div className="space-y-4">
+                  {Object.entries(groupedPrefabs).map(([category, items]) => (
+                    <div key={category}>
+                      <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">
+                        {category}
+                      </h4>
+                      <div className="flex flex-col gap-1">
+                        {items.map(prefab => (
+                          <HoverCard key={prefab.name} openDelay={200}>
+                            <HoverCardTrigger asChild>
+                              <div
+                                draggable
+                                onDragStart={e => onDragStart(prefab, e)}
+                                className="group relative flex items-center px-3 py-1 bg-secondary/5 hover:bg-secondary/20 rounded border border-border/30 hover:border-primary/50 cursor-grab active:cursor-grabbing transition-all h-8"
+                              >
+                                <span className="text-[11px] font-medium text-foreground/70 group-hover:text-primary transition-colors truncate">
+                                  {prefab.name}
+                                </span>
+                              </div>
+                            </HoverCardTrigger>
+                            <HoverCardContent side="right" align="start" className="w-48 p-2">
+                              <div className="space-y-2">
+                                <div className="flex justify-between items-center border-b border-border/50 pb-1">
+                                  <span className="font-semibold text-xs">{prefab.name}</span>
+                                  <span className="text-[10px] font-mono text-muted-foreground">
+                                    {prefab.width}
+                                    ×
+                                    {prefab.height}
+                                  </span>
+                                </div>
+                                <div className="aspect-square w-full bg-black/20 rounded border border-border/50 flex items-center justify-center p-2">
+                                  {/* Preview Grid */}
+                                  <div
+                                    className="grid gap-[1px]"
+                                    style={{
+                                      gridTemplateColumns: `repeat(${prefab.width}, 1fr)`,
+                                      width: '100%',
+                                      aspectRatio: `${prefab.width}/${prefab.height}`,
+                                    }}
+                                  >
+                                    {prefab.data.map((cell, i) => (
+                                      <div
+                                        key={i}
+                                        className={cn(
+                                          'w-full h-full rounded-[0.5px]',
+                                          cell ? 'bg-teal-400 shadow-[0_0_2px_rgba(45,212,191,0.5)]' : 'bg-muted/20',
+                                        )}
+                                      />
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            </HoverCardContent>
+                          </HoverCard>
+                        ))}
                       </div>
                     </div>
                   ))}
@@ -179,12 +245,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <span>{t('parameters')}</span>
                 </div>
               </AccordionTrigger>
-              <AccordionContent className="space-y-6 pt-2">
+              <AccordionContent className="space-y-6 pt-2 px-2">
                 {/* Speed */}
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <Label className="text-xs flex items-center gap-2">
-                      <Car className="h-3 w-3" />
+                      <Zap className="h-3 w-3" />
+                      {' '}
                       {t('speed')}
                     </Label>
                     <span className="text-xs text-muted-foreground">
@@ -199,6 +266,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     max={60}
                     step={1}
                     onValueChange={([v]) => setSpeed(v)}
+                    className="py-1"
+                  />
+                </div>
+
+                {/* Brush Size */}
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <Label className="text-xs flex items-center gap-2">
+                      <Brush className="h-3 w-3" />
+                      {' '}
+                      {t('brushSize')}
+                    </Label>
+                    <span className="text-xs text-muted-foreground">
+                      {brushSize}
+                    </span>
+                  </div>
+                  <Slider
+                    value={[brushSize]}
+                    min={1}
+                    max={10}
+                    step={1}
+                    onValueChange={([v]) => setBrushSize(v)}
                     className="py-1"
                   />
                 </div>
@@ -226,9 +315,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   />
                 </div>
 
-                {/* Grid Size */}
+                {/* Scene Dimensions */}
                 <div className="space-y-4">
-                  <Label className="text-xs">{t('sceneDimensions')}</Label>
+                  <Label className="text-xs flex items-center gap-2">
+                    <Ruler className="h-3 w-3" />
+                    {' '}
+                    {t('sceneDimensions')}
+                  </Label>
 
                   <div className="space-y-2">
                     <div className="flex justify-between">
@@ -294,27 +387,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     </div>
                   </div>
                 </div>
-
-                {/* Toggles */}
-                <div className="space-y-3 pt-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs text-muted-foreground flex items-center gap-2">
-                      <Grid3X3 className="h-3 w-3" />
-                      {' '}
-                      {t('showGrid')}
-                    </Label>
-                    <Switch checked={showGrid} onCheckedChange={toggleGrid} className="scale-75" />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs text-muted-foreground flex items-center gap-2">
-                      <Activity className="h-3 w-3" />
-                      {' '}
-                      {t('showStats')}
-                    </Label>
-                    <Switch checked={showStats} onCheckedChange={toggleStats} className="scale-75" />
-                  </div>
-                </div>
               </AccordionContent>
             </AccordionItem>
 
@@ -326,7 +398,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <span>{t('settings')}</span>
                 </div>
               </AccordionTrigger>
-              <AccordionContent className="space-y-6 pt-2">
+              <AccordionContent className="space-y-6 pt-2 px-2">
                 {/* Theme */}
                 <div className="space-y-3">
                   <Label className="text-xs flex items-center gap-2">
@@ -363,6 +435,36 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     </SelectContent>
                   </Select>
                 </div>
+
+                {/* Toggles */}
+                <div className="space-y-3 pt-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs text-muted-foreground flex items-center gap-2">
+                      <Grid3X3 className="h-3 w-3" />
+                      {' '}
+                      {t('showGrid')}
+                    </Label>
+                    <Switch checked={showGrid} onCheckedChange={toggleGrid} className="scale-75" />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs text-muted-foreground flex items-center gap-2">
+                      <Activity className="h-3 w-3" />
+                      {' '}
+                      {t('showStats')}
+                    </Label>
+                    <Switch checked={showStats} onCheckedChange={toggleStats} className="scale-75" />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs text-muted-foreground flex items-center gap-2">
+                      <Scan className="h-3 w-3" />
+                      {' '}
+                      {t('showZoomControls')}
+                    </Label>
+                    <Switch checked={showZoomControls} onCheckedChange={toggleZoomControls} className="scale-75" />
+                  </div>
+                </div>
               </AccordionContent>
             </AccordionItem>
 
@@ -376,6 +478,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <strong className="text-teal-500">Game of Life</strong>
           {' '}
           {t('footer')}
+          {' '}
+          <RulesDialog>
+            <span className="text-primary hover:underline cursor-pointer">
+              {t('showDetails')}
+            </span>
+          </RulesDialog>
         </div>
       </div>
 

@@ -3,8 +3,9 @@
 import type { PrefabData } from '../constants'
 import { useTheme } from 'next-themes'
 import React, { useEffect, useRef, useState } from 'react'
-import { PREFABS, TEXTURE_SIZE } from '../constants'
+import { TEXTURE_SIZE } from '../constants'
 import { useLifeGameEngine } from '../hooks/useLifeGameEngine'
+import { PREFABS } from '../prefabs'
 import { PlaybackControls } from './ui/PlaybackControls'
 import { Sidebar } from './ui/Sidebar'
 import { StatsCard } from './ui/StatsCard'
@@ -16,8 +17,8 @@ const LifeGame2D: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null)
 
   // UI State
-  const [speed, setSpeed] = useState<number>(5)
-  const [brushSize] = useState<number>(0.01)
+  const [speed, setSpeed] = useState<number>(4)
+  const [brushSize, setBrushSize] = useState<number>(2)
   const [drawMode, setDrawMode] = useState<boolean>(true)
   const [activePrefab, setActivePrefab] = useState<PrefabData | null>(null)
 
@@ -28,6 +29,7 @@ const LifeGame2D: React.FC = () => {
   const [deadColor, setDeadColor] = useState('#050505')
   const [randomPercentage, setRandomPercentageState] = useState<number>(0.2)
   const [showStats, setShowStats] = useState(true)
+  const [showZoomControls, setShowZoomControls] = useState(true)
 
   // Sidebar State
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
@@ -55,7 +57,7 @@ const LifeGame2D: React.FC = () => {
   } = useLifeGameEngine({
     mountRef,
     speed,
-    brushSize,
+    brushSize: (brushSize / 2.0) / sceneHeight,
     drawMode,
     activePrefab,
     setActivePrefab,
@@ -149,14 +151,16 @@ const LifeGame2D: React.FC = () => {
         </div>
 
         {/* View Controls - Bottom Right */}
-        <div className="absolute bottom-8 right-8 z-10">
-          <ViewControls
-            onZoomIn={zoomIn}
-            onZoomOut={zoomOut}
-            onResetCamera={resetCamera}
-            onFullscreen={toggleFullscreen}
-          />
-        </div>
+        {showZoomControls && (
+          <div className="absolute bottom-8 right-8 z-10">
+            <ViewControls
+              onZoomIn={zoomIn}
+              onZoomOut={zoomOut}
+              onResetCamera={resetCamera}
+              onFullscreen={toggleFullscreen}
+            />
+          </div>
+        )}
 
         {/* Stats Card - Top Right */}
         {showStats && (
@@ -180,6 +184,8 @@ const LifeGame2D: React.FC = () => {
         // Controls
         speed={speed}
         setSpeed={setSpeed}
+        brushSize={brushSize}
+        setBrushSize={setBrushSize}
         sceneWidth={sceneWidth}
         setSceneWidth={handleWidthChange}
         sceneHeight={sceneHeight}
@@ -194,6 +200,8 @@ const LifeGame2D: React.FC = () => {
         toggleGrid={toggleGrid}
         showStats={showStats}
         toggleStats={() => setShowStats(!showStats)}
+        showZoomControls={showZoomControls}
+        toggleZoomControls={() => setShowZoomControls(!showZoomControls)}
 
         // Actions
       />

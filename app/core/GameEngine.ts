@@ -2,7 +2,8 @@ import type { PrefabData } from '../constants'
 import type { Stats } from '../types'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/Addons.js'
-import { COLOR_ALIVE, COLOR_DEAD, PREFABS, TEXTURE_SIZE } from '../constants'
+import { COLOR_ALIVE, COLOR_DEAD, TEXTURE_SIZE } from '../constants'
+import { PREFABS } from '../prefabs'
 import { RENDER_FRAGMENT_SHADER, SIMULATION_FRAGMENT_SHADER } from '../shaders/fragment.glsl'
 import { VERTEX_SHADER } from '../shaders/vertex.glsl'
 import { GameState } from '../types'
@@ -49,6 +50,7 @@ export class GameEngine {
   private raycaster: THREE.Raycaster = new THREE.Raycaster()
   private planeMesh: THREE.Mesh | null = null
   private borderMesh: THREE.LineLoop | null = null
+  private resizeObserver: ResizeObserver | null = null
 
   // Callbacks
   private onStatsUpdate: ((stats: Stats) => void) | null = null
@@ -231,15 +233,18 @@ export class GameEngine {
     this.controls.minZoom = 0.5
     this.controls.maxZoom = 50
 
-    // 7. Event Listeners
-    window.addEventListener('resize', this.handleResize)
+    // 7. Resize Observer
+    this.resizeObserver = new ResizeObserver(() => {
+      this.handleResize()
+    })
+    this.resizeObserver.observe(container)
 
     // Start loop
     this.animate(0)
   }
 
   public dispose() {
-    window.removeEventListener('resize', this.handleResize)
+    this.resizeObserver?.disconnect()
     cancelAnimationFrame(this.animationId)
 
     if (this.mountContainer && this.renderer) {
