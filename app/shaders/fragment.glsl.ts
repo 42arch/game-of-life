@@ -3,12 +3,12 @@ export const SIMULATION_FRAGMENT_SHADER = `
   uniform vec2 uResolution;
   uniform vec2 uMouse;
   uniform float uBrushSize;
-  uniform bool uIsDrawing;
+  uniform float uIsDrawing;
   uniform float uSeed;
-  uniform bool uSimulate;
+  uniform float uSimulate;
 
   // Stamping Uniforms
-  uniform bool uIsStamping;
+  uniform float uIsStamping;
   uniform sampler2D uStampTexture;
   uniform vec2 uStampUV;
   uniform vec2 uStampSize; // (width/res, height/res)
@@ -21,7 +21,7 @@ export const SIMULATION_FRAGMENT_SHADER = `
 
   void main() {
       // 1. Stamping (Single Frame Operation)
-      if (uIsStamping) {
+      if (uIsStamping > 0.5) {
           // Calculate UV relative to the stamp box
           // Box is centered at uStampUV, size uStampSize
           vec2 boxMin = uStampUV - uStampSize * 0.5;
@@ -46,7 +46,7 @@ export const SIMULATION_FRAGMENT_SHADER = `
       }
 
       // 2. Drawing / Interaction (Brush)
-      if (uIsDrawing) {
+      if (uIsDrawing > 0.5) {
           float aspect = uResolution.x / uResolution.y;
           vec2 diff = vUv - uMouse;
           diff.x *= aspect;
@@ -61,7 +61,7 @@ export const SIMULATION_FRAGMENT_SHADER = `
       float current = get(0.0, 0.0);
       float next = current;
 
-      if (uSimulate) {
+      if (uSimulate > 0.5) {
           // Neighbors
           float sum = 
               get(-1.0, -1.0) + get(0.0, -1.0) + get(1.0, -1.0) +

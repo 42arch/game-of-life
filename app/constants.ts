@@ -1,6 +1,6 @@
 export const TEXTURE_SIZE = 1024 // 1024x1024 = ~1 Million cells
 
-export const COLOR_ALIVE = new Float32Array([0.0, 1.0, 0.53]) // Neon Green/Cyan (normalized 0-1)
+export const COLOR_ALIVE = new Float32Array([0.17, 0.83, 0.75]) // Teal-400
 export const COLOR_DEAD = new Float32Array([0.02, 0.02, 0.02]) // Dark Grey (normalized 0-1)
 
 // Three.js constants

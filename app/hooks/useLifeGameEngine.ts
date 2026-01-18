@@ -23,8 +23,8 @@ export function useLifeGameEngine({
 }: UseLifeGameEngineProps) {
   // State
   const [gameState, setGameState] = useState<GameState>(GameState.STOPPED)
-  const [stats, setStats] = useState<Stats>({ generation: 0 })
-  const [showGrid, setShowGrid] = useState(false)
+  const [stats, setStats] = useState<Stats>({ generation: 0, aliveCount: 0, deadCount: 0 })
+  const [showGrid, setShowGrid] = useState(true)
 
   // Engine Instance
   const engineRef = useRef<GameEngine | null>(null)
@@ -139,8 +139,8 @@ export function useLifeGameEngine({
     engineRef.current?.resetCamera()
   }, [])
 
-  const setGridSize = useCallback((size: number) => {
-    engineRef.current?.setGridSize(size)
+  const setSceneDimensions = useCallback((width: number, height: number) => {
+    engineRef.current?.setSceneDimensions(width, height)
   }, [])
 
   const setColors = useCallback((alive: string, dead: string) => {
@@ -153,6 +153,10 @@ export function useLifeGameEngine({
       engineRef.current?.setGridVisible(next)
       return next
     })
+  }, [])
+
+  const setRandomPercentage = useCallback((percentage: number) => {
+    engineRef.current?.setRandomPercentage(percentage)
   }, [])
 
   return {
@@ -169,8 +173,9 @@ export function useLifeGameEngine({
     zoomIn,
     zoomOut,
     resetCamera,
-    setGridSize,
+    setSceneDimensions,
     setColors,
+    setRandomPercentage,
     showGrid,
     toggleGrid,
   }

@@ -10,4 +10,6 @@ export enum GameState {
 
 export interface Stats {
   generation: number
+  aliveCount: number
+  deadCount: number
 }

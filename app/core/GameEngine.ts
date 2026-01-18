@@ -13,7 +13,9 @@ export class GameEngine {
   private speed: number = 30
   private brushSize: number = 0.01
   private drawMode: boolean = true
-  private textureSize: number = TEXTURE_SIZE
+  private textureWidth: number = TEXTURE_SIZE
+  private textureHeight: number = TEXTURE_SIZE
+  private randomPercentage: number = 0.2
 
   // Internal State
   private isRunning: boolean = false
@@ -22,6 +24,8 @@ export class GameEngine {
   private generationCount: number = 0
   private mouseUv: THREE.Vector2 = new THREE.Vector2(-1, -1)
   private animationId: number = 0
+  private lastStatsUpdate: number = 0
+  private isUpdatingStats: boolean = false
 
   // Stamping
   private stampQueue: { texture: THREE.Texture, width: number, height: number, uv: THREE.Vector2 } | null = null
@@ -44,6 +48,7 @@ export class GameEngine {
   private fboB: THREE.WebGLRenderTarget | null = null
   private raycaster: THREE.Raycaster = new THREE.Raycaster()
   private planeMesh: THREE.Mesh | null = null
+  private borderMesh: THREE.LineLoop | null = null
 
   // Callbacks
   private onStatsUpdate: ((stats: Stats) => void) | null = null
@@ -95,19 +100,19 @@ export class GameEngine {
       format: THREE.RGBAFormat,
       type: THREE.FloatType,
     }
-    this.fboA = new THREE.WebGLRenderTarget(TEXTURE_SIZE, TEXTURE_SIZE, fboOptions)
-    this.fboB = new THREE.WebGLRenderTarget(TEXTURE_SIZE, TEXTURE_SIZE, fboOptions)
+    this.fboA = new THREE.WebGLRenderTarget(this.textureWidth, this.textureHeight, fboOptions)
+    this.fboB = new THREE.WebGLRenderTarget(this.textureWidth, this.textureHeight, fboOptions)
 
     // 3. Initial Data
-    const data = new Float32Array(TEXTURE_SIZE * TEXTURE_SIZE * 4)
+    const data = new Float32Array(this.textureWidth * this.textureHeight * 4)
     for (let i = 0; i < data.length; i += 4) {
-      const val = Math.random() > 0.8 ? 1.0 : 0.0
+      const val = Math.random() < this.randomPercentage ? 1.0 : 0.0
       data[i] = val
       data[i + 1] = 0
       data[i + 2] = 0
       data[i + 3] = 1
     }
-    const startTexture = new THREE.DataTexture(data, TEXTURE_SIZE, TEXTURE_SIZE, THREE.RGBAFormat, THREE.FloatType)
+    const startTexture = new THREE.DataTexture(data, this.textureWidth, this.textureHeight, THREE.RGBAFormat, THREE.FloatType)
     startTexture.needsUpdate = true
 
     // 4. Simulation Scene
@@ -117,14 +122,14 @@ export class GameEngine {
     this.simMaterial = new THREE.ShaderMaterial({
       uniforms: {
         tSource: { value: startTexture },
-        uResolution: { value: new THREE.Vector2(TEXTURE_SIZE, TEXTURE_SIZE) },
+        uResolution: { value: new THREE.Vector2(this.textureWidth, this.textureHeight) },
         uMouse: { value: new THREE.Vector2(-100, -100) },
         uBrushSize: { value: this.brushSize },
-        uIsDrawing: { value: false },
-        uSimulate: { value: false },
+        uIsDrawing: { value: 0.0 },
+        uSimulate: { value: 0.0 },
 
         // Stamp Uniforms
-        uIsStamping: { value: false },
+        uIsStamping: { value: 0.0 },
         uStampTexture: { value: null },
         uStampUV: { value: new THREE.Vector2(0, 0) },
         uStampSize: { value: new THREE.Vector2(0, 0) },
@@ -156,6 +161,8 @@ export class GameEngine {
     )
     this.camera.position.set(0, 0, 10)
     this.camera.lookAt(0, 0, 0)
+    this.camera.zoom = 10.0
+    this.camera.updateProjectionMatrix()
 
     const displayGeo = new THREE.PlaneGeometry(1, 1)
     this.displayMaterial = new THREE.ShaderMaterial({
@@ -163,13 +170,15 @@ export class GameEngine {
         tMap: { value: this.fboA.texture },
         uColorAlive: { value: new THREE.Vector3(...COLOR_ALIVE) },
         uColorDead: { value: new THREE.Vector3(...COLOR_DEAD) },
-        uResolution: { value: new THREE.Vector2(TEXTURE_SIZE, TEXTURE_SIZE) },
+        uResolution: { value: new THREE.Vector2(this.textureWidth, this.textureHeight) },
         uGridVisible: { value: 0.0 },
       },
       vertexShader: VERTEX_SHADER,
       fragmentShader: RENDER_FRAGMENT_SHADER,
     })
     this.planeMesh = new THREE.Mesh(displayGeo, this.displayMaterial)
+    // Scale mesh to match aspect ratio
+    this.planeMesh.scale.set(this.textureWidth / this.textureHeight, 1, 1)
     this.scene.add(this.planeMesh)
 
     // Border Mesh
@@ -190,10 +199,11 @@ export class GameEngine {
     ])
     borderGeo.setAttribute('position', new THREE.BufferAttribute(vertices, 3))
     const borderMat = new THREE.LineBasicMaterial({ color: 0x333333 })
-    const borderMesh = new THREE.LineLoop(borderGeo, borderMat)
-    // Place it slightly above the plane to avoid z-fighting if plane is at 0
-    borderMesh.position.z = 0.001
-    this.scene.add(borderMesh)
+    this.borderMesh = new THREE.LineLoop(borderGeo, borderMat)
+    this.borderMesh.position.z = 0.001
+    // Scale border to match aspect ratio
+    this.borderMesh.scale.set(this.textureWidth / this.textureHeight, 1, 1)
+    this.scene.add(this.borderMesh)
 
     // Preview Mesh
     const previewGeo = new THREE.PlaneGeometry(1, 1)
@@ -271,24 +281,24 @@ export class GameEngine {
     if (shouldSimulate && (this.isDrawing || isStamping || delta > interval)) {
       // Update Uniforms
       this.simMaterial.uniforms.tSource.value = this.fboA.texture
-      this.simMaterial.uniforms.uIsDrawing.value = this.isDrawing
+      this.simMaterial.uniforms.uIsDrawing.value = this.isDrawing ? 1.0 : 0.0
       this.simMaterial.uniforms.uMouse.value = this.mouseUv
       this.simMaterial.uniforms.uBrushSize.value = this.brushSize
 
       // Only simulate physics if the game is running
       // If we are just drawing/stamping in pause mode, uSimulate should be false
-      this.simMaterial.uniforms.uSimulate.value = this.isRunning && (delta > interval)
+      this.simMaterial.uniforms.uSimulate.value = (this.isRunning && (delta > interval)) ? 1.0 : 0.0
 
       // Handle Stamping
       if (isStamping && this.stampQueue) {
         const stamp = this.stampQueue
-        this.simMaterial.uniforms.uIsStamping.value = true
+        this.simMaterial.uniforms.uIsStamping.value = 1.0
         this.simMaterial.uniforms.uStampTexture.value = stamp.texture
         this.simMaterial.uniforms.uStampUV.value = stamp.uv
-        this.simMaterial.uniforms.uStampSize.value.set(stamp.width / this.textureSize, stamp.height / this.textureSize)
+        this.simMaterial.uniforms.uStampSize.value.set(stamp.width / this.textureWidth, stamp.height / this.textureHeight)
       }
       else {
-        this.simMaterial.uniforms.uIsStamping.value = false
+        this.simMaterial.uniforms.uIsStamping.value = 0.0
       }
 
       // Render Sim
@@ -298,7 +308,7 @@ export class GameEngine {
 
       if (isStamping) {
         this.stampQueue = null
-        this.simMaterial.uniforms.uIsStamping.value = false
+        this.simMaterial.uniforms.uIsStamping.value = 0.0
       }
 
       // Swap
@@ -306,20 +316,71 @@ export class GameEngine {
       this.fboA = this.fboB
       this.fboB = temp
 
-      // Update Display
-      this.displayMaterial.uniforms.tMap.value = this.fboA.texture
-
       // Stats
       if (this.isRunning) {
         this.lastFrameTime = time - (delta % interval)
         this.generationCount++
-        if (this.generationCount % 10 === 0 && this.onStatsUpdate) {
-          this.onStatsUpdate({ generation: this.generationCount })
-        }
       }
     }
 
+    // Always sync tMap to show the current state (including drawing while paused)
+    this.displayMaterial.uniforms.tMap.value = this.fboA.texture
     this.renderer.render(this.scene, this.camera)
+
+    // Update Stats (Throttle to every 1000ms)
+    if (time - this.lastStatsUpdate > 1000 && this.onStatsUpdate && this.renderer && this.fboA && !this.isUpdatingStats) {
+      this.lastStatsUpdate = time
+      this.updateStats()
+    }
+  }
+
+  private async updateStats() {
+    if (!this.renderer || !this.fboA || this.isUpdatingStats)
+      return
+
+    this.isUpdatingStats = true
+    const width = this.textureWidth
+    const height = this.textureHeight
+    const buffer = new Float32Array(width * height * 4)
+
+    // Use async read if available, otherwise sync (which might stutter)
+    try {
+      if ('readRenderTargetPixelsAsync' in this.renderer) {
+        // @ts-expect-error - Three.js types might not be up to date for this method
+        const pixelBuffer = await this.renderer.readRenderTargetPixelsAsync(this.fboA, 0, 0, width, height, buffer)
+        if (pixelBuffer) {
+          this.countCells(pixelBuffer as Float32Array)
+          this.isUpdatingStats = false
+          return
+        }
+      }
+
+      // Fallback to sync
+      this.renderer.readRenderTargetPixels(this.fboA, 0, 0, width, height, buffer)
+      this.countCells(buffer)
+    }
+    catch (e) {
+      console.warn('Stats update failed', e)
+    }
+    this.isUpdatingStats = false
+  }
+
+  private countCells(buffer: Float32Array | Uint8Array | Uint16Array) {
+    let alive = 0
+    // Loop through red channel (index 0, 4, 8...)
+    for (let i = 0; i < buffer.length; i += 4) {
+      if (buffer[i] > 0.5)
+        alive++
+    }
+    const total = this.textureWidth * this.textureHeight
+
+    if (this.onStatsUpdate) {
+      this.onStatsUpdate({
+        generation: this.generationCount,
+        aliveCount: alive,
+        deadCount: total - alive,
+      })
+    }
   }
 
   // --- Interaction Methods ---
@@ -361,8 +422,8 @@ export class GameEngine {
       // Ensure preview mesh is updated
       const tex = this.prefabTextures.get(activePrefab.name)
       if (tex) {
-        const scaleX = activePrefab.width / this.textureSize
-        const scaleY = activePrefab.height / this.textureSize
+        const scaleX = activePrefab.width / this.textureWidth
+        const scaleY = activePrefab.height / this.textureHeight
         this.previewMesh.scale.set(scaleX, scaleY, 1);
         (this.previewMesh.material as THREE.MeshBasicMaterial).map = tex;
         (this.previewMesh.material as THREE.MeshBasicMaterial).needsUpdate = true
@@ -431,12 +492,12 @@ export class GameEngine {
     if (!this.renderer || !this.simMaterial || !this.fboA)
       return
 
-    const data = new Float32Array(this.textureSize * this.textureSize * 4).fill(0)
-    const tex = new THREE.DataTexture(data, this.textureSize, this.textureSize, THREE.RGBAFormat, THREE.FloatType)
+    const data = new Float32Array(this.textureWidth * this.textureHeight * 4).fill(0)
+    const tex = new THREE.DataTexture(data, this.textureWidth, this.textureHeight, THREE.RGBAFormat, THREE.FloatType)
     tex.needsUpdate = true
 
     this.simMaterial.uniforms.tSource.value = tex
-    this.simMaterial.uniforms.uIsDrawing.value = false
+    this.simMaterial.uniforms.uIsDrawing.value = 0.0
 
     this.renderer.setRenderTarget(this.fboA)
     this.renderer.render(this.simScene!, this.simCamera!)
@@ -446,7 +507,7 @@ export class GameEngine {
     this.isRunning = false
     this.generationCount = 0
     if (this.onStatsUpdate)
-      this.onStatsUpdate({ generation: 0 })
+      this.onStatsUpdate({ generation: 0, aliveCount: 0, deadCount: this.textureWidth * this.textureHeight })
     if (this.onGameStateChange)
       this.onGameStateChange(this.gameState)
   }
@@ -455,27 +516,27 @@ export class GameEngine {
     if (!this.renderer || !this.simMaterial || !this.fboA)
       return
 
-    const data = new Float32Array(this.textureSize * this.textureSize * 4)
+    const data = new Float32Array(this.textureWidth * this.textureHeight * 4)
     for (let i = 0; i < data.length; i += 4) {
-      const val = Math.random() > 0.8 ? 1.0 : 0.0
+      const val = Math.random() < this.randomPercentage ? 1.0 : 0.0
       data[i] = val
       data[i + 1] = 0
       data[i + 2] = 0
       data[i + 3] = 1
     }
-    const tex = new THREE.DataTexture(data, this.textureSize, this.textureSize, THREE.RGBAFormat, THREE.FloatType)
+    const tex = new THREE.DataTexture(data, this.textureWidth, this.textureHeight, THREE.RGBAFormat, THREE.FloatType)
     tex.needsUpdate = true
 
     this.simMaterial.uniforms.tSource.value = tex
-    this.simMaterial.uniforms.uIsDrawing.value = false
+    this.simMaterial.uniforms.uIsDrawing.value = 0.0
 
     this.renderer.setRenderTarget(this.fboA)
     this.renderer.render(this.simScene!, this.simCamera!)
     this.renderer.setRenderTarget(null)
 
     this.generationCount = 0
-    if (this.onStatsUpdate)
-      this.onStatsUpdate({ generation: 0 })
+    // Trigger initial stats update after reset
+    this.updateStats()
   }
 
   // --- Camera Controls ---
@@ -497,7 +558,7 @@ export class GameEngine {
   public resetCamera() {
     if (!this.camera || !this.controls)
       return
-    this.camera.zoom = 1
+    this.camera.zoom = 10.0
     this.camera.position.set(0, 0, 10)
     this.camera.lookAt(0, 0, 0)
     this.controls.target.set(0, 0, 0)
@@ -507,10 +568,20 @@ export class GameEngine {
 
   // --- Configuration ---
 
-  public setGridSize(size: number) {
-    if (size === this.textureSize)
+  public setSceneDimensions(width: number, height: number) {
+    if (width === this.textureWidth && height === this.textureHeight)
       return
-    this.textureSize = size
+    this.textureWidth = width
+    this.textureHeight = height
+
+    // Update Mesh Scale
+    const aspect = width / height
+    if (this.planeMesh) {
+      this.planeMesh.scale.set(aspect, 1, 1)
+    }
+    if (this.borderMesh) {
+      this.borderMesh.scale.set(aspect, 1, 1)
+    }
 
     // Dispose old targets
     this.fboA?.dispose()
@@ -523,30 +594,30 @@ export class GameEngine {
       format: THREE.RGBAFormat,
       type: THREE.FloatType,
     }
-    this.fboA = new THREE.WebGLRenderTarget(size, size, fboOptions)
-    this.fboB = new THREE.WebGLRenderTarget(size, size, fboOptions)
+    this.fboA = new THREE.WebGLRenderTarget(width, height, fboOptions)
+    this.fboB = new THREE.WebGLRenderTarget(width, height, fboOptions)
 
     // Reset Data
-    const data = new Float32Array(size * size * 4)
+    const data = new Float32Array(width * height * 4)
     for (let i = 0; i < data.length; i += 4) {
-      const val = Math.random() > 0.8 ? 1.0 : 0.0
+      const val = Math.random() < this.randomPercentage ? 1.0 : 0.0
       data[i] = val
       data[i + 1] = 0
       data[i + 2] = 0
       data[i + 3] = 1
     }
-    const startTexture = new THREE.DataTexture(data, size, size, THREE.RGBAFormat, THREE.FloatType)
+    const startTexture = new THREE.DataTexture(data, width, height, THREE.RGBAFormat, THREE.FloatType)
     startTexture.needsUpdate = true
 
     // Update Sim Material
     if (this.simMaterial) {
       this.simMaterial.uniforms.tSource.value = startTexture
-      this.simMaterial.uniforms.uResolution.value.set(size, size)
+      this.simMaterial.uniforms.uResolution.value.set(width, height)
     }
 
     // Update Display Material
     if (this.displayMaterial) {
-      this.displayMaterial.uniforms.uResolution.value.set(size, size)
+      this.displayMaterial.uniforms.uResolution.value.set(width, height)
     }
 
     // Initial Render
@@ -562,8 +633,8 @@ export class GameEngine {
     }
 
     this.generationCount = 0
-    if (this.onStatsUpdate)
-      this.onStatsUpdate({ generation: 0 })
+    // Trigger update
+    this.updateStats()
   }
 
   public setColors(aliveHex: string, deadHex: string) {
@@ -579,5 +650,9 @@ export class GameEngine {
     if (this.displayMaterial) {
       this.displayMaterial.uniforms.uGridVisible.value = visible ? 1.0 : 0.0
     }
+  }
+
+  public setRandomPercentage(percentage: number) {
+    this.randomPercentage = percentage
   }
 }
