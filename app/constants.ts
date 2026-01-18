@@ -7,6 +7,8 @@ export const COLOR_DEAD = new Float32Array([0.02, 0.02, 0.02]) // Dark Grey (nor
 export const NEAR_PLANE = 0.1
 export const FAR_PLANE = 1000
 
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://game-of-life.starllow.com' // Placeholder URL
+
 export interface PrefabData {
 
   name: string

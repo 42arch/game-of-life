@@ -3,6 +3,11 @@
     "title": "Game of Life",
     "subtitle": "Conway's Game of Life"
   },
+  "Metadata": {
+    "title": "Game of Life - Interactive Cellular Evolution",
+    "description": "Explore the fascinating world of Conway's Game of Life. Create living patterns, watch them evolve, and discover the beauty of cellular automata in this interactive online simulation.",
+    "keywords": "Conway's Game of Life, Cellular Automaton, Online Simulation, Interactive Art, Digital Life, Evolution Game, Pattern Generator, Mathematical Art, Education"
+  },
   "Stats": {
     "title": "Live Statistics",
     "generation": "Generation",

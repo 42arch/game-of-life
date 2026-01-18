@@ -5,7 +5,7 @@ import { GameEngine } from '../core/GameEngine'
 import { GameState } from '../types'
 
 interface UseLifeGameEngineProps {
-  mountRef: React.RefObject<HTMLDivElement>
+  mountRef: React.RefObject<HTMLDivElement | null>
   speed: number
   brushSize: number
   drawMode: boolean
