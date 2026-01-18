@@ -4,6 +4,7 @@ import {
   Brush,
   Cpu,
   Dices,
+  Github,
   Grid3X3,
   Languages,
   LayoutTemplate,
@@ -175,6 +176,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </div>
               </AccordionTrigger>
               <AccordionContent className="pt-2 px-2">
+                <p className="text-[10px] text-muted-foreground mb-4 italic">
+                  {t('layoutHint')}
+                </p>
                 <div className="space-y-4">
                   {Object.entries(groupedPrefabs).map(([category, items]) => (
                     <div key={category}>
@@ -473,7 +477,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </ScrollArea>
 
       {/* Footer Info */}
-      <div className="p-4 border-t border-border/50 bg-muted/5">
+      <div className="p-4 border-t border-border/50 bg-muted/5 space-y-2">
         <div className="text-[10px] text-muted-foreground leading-relaxed">
           <strong className="text-teal-500">Game of Life</strong>
           {' '}
@@ -484,6 +488,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {t('showDetails')}
             </span>
           </RulesDialog>
+        </div>
+        <div className="flex items-center gap-2">
+          <Github className="h-3 w-3 text-muted-foreground" />
+          <a
+            href="https://github.com/42arch/game-of-life"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[10px] text-muted-foreground hover:text-primary transition-colors"
+          >
+            {t('github')}
+          </a>
         </div>
       </div>
 

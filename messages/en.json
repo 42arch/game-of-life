@@ -26,6 +26,7 @@
     "parameters": "Parameters",
     "settings": "System Settings",
     "layouts": "Default Layouts",
+    "layoutHint": "Drag an option below to add it to the scene.",
     "actions": "Quick Actions",
     "speed": "Simulation Speed",
     "gensPerSecond": "gen/s",
@@ -54,6 +55,7 @@
       "zh": "Chinese"
     },
     "footer": "is a cellular automaton devised by John Horton Conway. Cells live or die based on their neighbors.",
+    "github": "View on GitHub",
     "showDetails": "Click to show details.",
     "rulesTitle": "Game Rules",
     "rulesIntro": "In the Game of Life, for any cell, the rules are as follows:",

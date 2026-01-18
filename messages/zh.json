@@ -26,6 +26,7 @@
     "parameters": "参数设置",
     "settings": "系统设置",
     "layouts": "预设布局",
+    "layoutHint": "拖动下方的选项可以将其添加到游戏场景中。",
     "actions": "快捷操作",
     "speed": "模拟速度",
     "gensPerSecond": "代/秒",
@@ -54,6 +55,7 @@
       "zh": "简体中文"
     },
     "footer": "是一个由约翰·霍顿·康威设计的元胞自动机。细胞根据其邻居的状态生存或死亡。",
+    "github": "在 GitHub 上查看",
     "showDetails": "点击查看详情。",
     "rulesTitle": "游戏规则",
     "rulesIntro": "生命游戏中，对于任意细胞，规则如下：",
