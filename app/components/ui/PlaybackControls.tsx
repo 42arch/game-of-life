@@ -1,4 +1,5 @@
 import { Eraser, MousePointer2, Pause, Play, Shuffle } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import React from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from './button'
@@ -21,6 +22,8 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
   drawMode,
   onToggleDrawMode,
 }) => {
+  const t = useTranslations('Controls')
+
   return (
     <div className="flex items-center gap-2 rounded-full bg-card/80 p-2 px-4 backdrop-blur-md border border-border/50 shadow-2xl">
       {/* Play/Pause - Left */}
@@ -34,6 +37,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
             : 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-[0_0_15px_rgba(45,212,191,0.5)]',
         )}
         onClick={onTogglePlay}
+        title={isRunning ? t('pause') : t('play')}
       >
         {isRunning ? <Pause className="h-5 w-5 fill-current" /> : <Play className="h-5 w-5 fill-current ml-1" />}
       </Button>
@@ -47,7 +51,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
           size="icon"
           className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent"
           onClick={onClear}
-          title="Clear Board"
+          title={t('clear')}
         >
           <Eraser className="h-4 w-4" />
         </Button>
@@ -57,7 +61,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
           size="icon"
           className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent"
           onClick={onRandom}
-          title="Randomize"
+          title={t('random')}
         >
           <Shuffle className="h-4 w-4" />
         </Button>
@@ -72,7 +76,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
               : 'text-muted-foreground hover:text-foreground hover:bg-accent',
           )}
           onClick={onToggleDrawMode}
-          title={drawMode ? 'Draw Mode On' : 'Draw Mode Off'}
+          title={drawMode ? t('drawOn') : t('drawOff')}
         >
           <MousePointer2 className="h-4 w-4" />
         </Button>

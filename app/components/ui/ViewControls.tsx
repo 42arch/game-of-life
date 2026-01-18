@@ -1,4 +1,5 @@
 import { Maximize, Minus, Plus, RotateCcw } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import React from 'react'
 
 interface ViewControlsProps {
@@ -14,26 +15,28 @@ export const ViewControls: React.FC<ViewControlsProps> = ({
   onResetCamera,
   onFullscreen,
 }) => {
+  const t = useTranslations('Controls')
+
   return (
     <div className="flex flex-col gap-2 bg-card/80 backdrop-blur-xl p-2 rounded-xl border border-border/50 shadow-2xl">
       <button
         onClick={onZoomIn}
         className="p-2 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
-        title="Zoom In"
+        title={t('zoomIn')}
       >
         <Plus size={20} />
       </button>
       <button
         onClick={onZoomOut}
         className="p-2 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
-        title="Zoom Out"
+        title={t('zoomOut')}
       >
         <Minus size={20} />
       </button>
       <button
         onClick={onResetCamera}
         className="p-2 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
-        title="Reset View"
+        title={t('resetView')}
       >
         <RotateCcw size={20} />
       </button>
@@ -41,7 +44,7 @@ export const ViewControls: React.FC<ViewControlsProps> = ({
       <button
         onClick={onFullscreen}
         className="p-2 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
-        title="Fullscreen"
+        title={t('fullscreen')}
       >
         <Maximize size={20} />
       </button>

@@ -85,6 +85,7 @@ export const RENDER_FRAGMENT_SHADER = `
   uniform sampler2D tMap;
   uniform vec3 uColorAlive;
   uniform vec3 uColorDead;
+  uniform vec3 uGridColor;
   uniform vec2 uResolution;
   uniform float uGridVisible;
   varying vec2 vUv;
@@ -97,7 +98,7 @@ export const RENDER_FRAGMENT_SHADER = `
           vec2 grid = abs(fract(vUv * uResolution - 0.5) - 0.5) / fwidth(vUv * uResolution);
           float line = min(grid.x, grid.y);
           float gridVal = 1.0 - min(line, 1.0);
-          color = mix(color, uColorDead * 0.5, gridVal * 0.4);
+          color = mix(color, uGridColor, gridVal * 0.3);
       }
 
       gl_FragColor = vec4(color, 1.0);

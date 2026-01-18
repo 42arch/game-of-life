@@ -1,0 +1,56 @@
+{
+  "Game": {
+    "title": "生命游戏",
+    "subtitle": "康威生命游戏"
+  },
+  "Stats": {
+    "title": "实时统计",
+    "generation": "世代",
+    "alive": "存活",
+    "dead": "死亡",
+    "gridSize": "网格大小"
+  },
+  "Controls": {
+    "play": "播放",
+    "pause": "暂停",
+    "clear": "清空画布",
+    "random": "随机生成",
+    "drawOn": "绘图模式开启",
+    "drawOff": "绘图模式关闭",
+    "zoomIn": "放大",
+    "zoomOut": "缩小",
+    "resetView": "重置视角",
+    "fullscreen": "全屏"
+  },
+  "Sidebar": {
+    "parameters": "参数设置",
+    "settings": "系统设置",
+    "layouts": "预设布局",
+    "actions": "快捷操作",
+    "speed": "模拟速度",
+    "gensPerSecond": "代/秒",
+    "randomFill": "随机填充",
+    "sceneDimensions": "场景尺寸",
+    "width": "宽度",
+    "height": "高度",
+    "colors": "颜色设置",
+    "alive": "存活颜色",
+    "dead": "背景颜色",
+    "showGrid": "显示网格",
+    "showStats": "显示统计",
+    "themeMode": "主题模式",
+    "language": "语言",
+    "selectTheme": "选择主题",
+    "selectLanguage": "选择语言",
+    "themes": {
+      "light": "亮色",
+      "dark": "暗色",
+      "system": "跟随系统"
+    },
+    "languages": {
+      "en": "英文",
+      "zh": "简体中文"
+    },
+    "footer": "是一个由约翰·霍顿·康威设计的元胞自动机。细胞根据其邻居的状态生存或死亡。"
+  }
+}

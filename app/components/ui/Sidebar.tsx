@@ -1,18 +1,23 @@
 import type { PrefabData } from '../../constants'
 import {
   Activity,
+  Car,
   Cpu,
   Dices,
   Grid3X3,
+  Languages,
   LayoutTemplate,
   Moon,
   Palette,
   PanelRightClose,
   PanelRightOpen,
+  Settings,
   Sun,
 } from 'lucide-react'
+import { useLocale, useTranslations } from 'next-intl'
 import { useTheme } from 'next-themes'
 import React from 'react'
+import { usePathname, useRouter } from '@/i18n/routing'
 import { cn } from '@/lib/utils'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './accordion'
 import { Button } from './button'
@@ -72,6 +77,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
   toggleStats,
 }) => {
   const { theme, setTheme } = useTheme()
+  const t = useTranslations('Sidebar')
+  const locale = useLocale()
+  const router = useRouter()
+  const pathname = usePathname()
+
+  const handleLanguageChange = (newLocale: string) => {
+    router.replace(pathname, { locale: newLocale })
+  }
 
   if (!isOpen) {
     return (
@@ -113,181 +126,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <ScrollArea className="flex-1 px-4">
         <div className="flex flex-col gap-6 py-4">
 
-          <Accordion type="multiple" defaultValue={['params', 'layouts', 'actions']} className="w-full">
-
-            {/* Parameters */}
-            <AccordionItem value="params" className="border-border/50">
-              <AccordionTrigger className="text-sm hover:no-underline py-3">
-                <div className="flex items-center gap-2">
-                  <Cpu className="h-4 w-4 text-teal-500" />
-                  <span>Parameters</span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="space-y-6 pt-2">
-                {/* Speed */}
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <Label className="text-xs">Simulation Speed</Label>
-                    <span className="text-xs text-muted-foreground">
-                      {speed}
-                      {' '}
-                      gen/s
-                    </span>
-                  </div>
-                  <Slider
-                    value={[speed]}
-                    min={1}
-                    max={60}
-                    step={1}
-                    onValueChange={([v]) => setSpeed(v)}
-                    className="py-1"
-                  />
-                </div>
-
-                {/* Theme */}
-                <div className="space-y-3">
-                  <Label className="text-xs flex items-center gap-2">
-                    {theme === 'dark' ? <Moon className="h-3 w-3" /> : <Sun className="h-3 w-3" />}
-                    {' '}
-                    Theme Mode
-                  </Label>
-                  <Select value={theme} onValueChange={setTheme}>
-                    <SelectTrigger className="h-8 text-xs">
-                      <SelectValue placeholder="Select theme" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="light">Light</SelectItem>
-                      <SelectItem value="dark">Dark</SelectItem>
-                      <SelectItem value="system">System</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Random Percentage */}
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <Label className="text-xs flex items-center gap-2">
-                      <Dices className="h-3 w-3" />
-                      {' '}
-                      Random Fill
-                    </Label>
-                    <span className="text-xs text-muted-foreground">
-                      {(randomPercentage * 100).toFixed(0)}
-                      %
-                    </span>
-                  </div>
-                  <Slider
-                    value={[randomPercentage]}
-                    min={0}
-                    max={0.5}
-                    step={0.01}
-                    onValueChange={([v]) => setRandomPercentage(v)}
-                    className="py-1"
-                  />
-                </div>
-
-                {/* Grid Size */}
-                <div className="space-y-4">
-                  <Label className="text-xs">Scene Dimensions</Label>
-
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-[10px] text-muted-foreground">Width</span>
-                      <span className="text-[10px] font-mono">{sceneWidth}</span>
-                    </div>
-                    <Slider
-                      value={[sceneWidth]}
-                      min={128}
-                      max={2048}
-                      step={128}
-                      onValueChange={([v]) => setSceneWidth(v)}
-                      className="py-1"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-[10px] text-muted-foreground">Height</span>
-                      <span className="text-[10px] font-mono">{sceneHeight}</span>
-                    </div>
-                    <Slider
-                      value={[sceneHeight]}
-                      min={128}
-                      max={2048}
-                      step={128}
-                      onValueChange={([v]) => setSceneHeight(v)}
-                      className="py-1"
-                    />
-                  </div>
-                </div>
-                {/* Colors */}
-                <div className="space-y-3 pt-2">
-                  <Label className="text-xs flex items-center gap-2">
-                    <Palette className="h-3 w-3" />
-                    {' '}
-                    Colors
-                  </Label>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <span className="text-[10px] text-muted-foreground block">Alive</span>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="color"
-                          value={aliveColor}
-                          onChange={e => setAliveColor(e.target.value)}
-                          className="h-6 w-8 rounded cursor-pointer border-none bg-transparent p-0"
-                        />
-                        <span className="text-[10px] font-mono text-muted-foreground">{aliveColor}</span>
-                      </div>
-                    </div>
-                    <div className="space-y-1">
-                      <span className="text-[10px] text-muted-foreground block">Dead</span>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="color"
-                          value={deadColor}
-                          onChange={e => setDeadColor(e.target.value)}
-                          className="h-6 w-8 rounded cursor-pointer border-none bg-transparent p-0"
-                        />
-                        <span className="text-[10px] font-mono text-muted-foreground">{deadColor}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Toggles */}
-                <div className="space-y-3 pt-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs text-muted-foreground flex items-center gap-2">
-                      <Grid3X3 className="h-3 w-3" />
-                      {' '}
-                      Show Grid
-                    </Label>
-                    <Switch checked={showGrid} onCheckedChange={toggleGrid} className="scale-75" />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs text-muted-foreground flex items-center gap-2">
-                      <Activity className="h-3 w-3" />
-                      {' '}
-                      Show Statistics
-                    </Label>
-                    <Switch checked={showStats} onCheckedChange={toggleStats} className="scale-75" />
-                  </div>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
+          <Accordion type="multiple" defaultValue={['layouts', 'params', 'settings']} className="w-full">
 
             {/* Layouts */}
-            <AccordionItem value="layouts" className="border-none">
+            <AccordionItem value="layouts" className="border-border/50">
               <AccordionTrigger className="text-sm hover:no-underline py-3">
                 <div className="flex items-center gap-2">
                   <LayoutTemplate className="h-4 w-4 text-teal-500" />
-                  <span>Default Layouts</span>
+                  <span>{t('layouts')}</span>
                 </div>
               </AccordionTrigger>
               <AccordionContent className="pt-2">
-                {' '}
                 <div className="grid grid-cols-2 gap-2">
                   {prefabs.map(prefab => (
                     <div
@@ -318,11 +167,202 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       </div>
                     </div>
                   ))}
-                  {' '}
-
                 </div>
-                {' '}
+              </AccordionContent>
+            </AccordionItem>
 
+            {/* Parameters */}
+            <AccordionItem value="params" className="border-border/50">
+              <AccordionTrigger className="text-sm hover:no-underline py-3">
+                <div className="flex items-center gap-2">
+                  <Cpu className="h-4 w-4 text-teal-500" />
+                  <span>{t('parameters')}</span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="space-y-6 pt-2">
+                {/* Speed */}
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <Label className="text-xs flex items-center gap-2">
+                      <Car className="h-3 w-3" />
+                      {t('speed')}
+                    </Label>
+                    <span className="text-xs text-muted-foreground">
+                      {speed}
+                      {' '}
+                      {t('gensPerSecond')}
+                    </span>
+                  </div>
+                  <Slider
+                    value={[speed]}
+                    min={1}
+                    max={60}
+                    step={1}
+                    onValueChange={([v]) => setSpeed(v)}
+                    className="py-1"
+                  />
+                </div>
+
+                {/* Random Percentage */}
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <Label className="text-xs flex items-center gap-2">
+                      <Dices className="h-3 w-3" />
+                      {' '}
+                      {t('randomFill')}
+                    </Label>
+                    <span className="text-xs text-muted-foreground">
+                      {(randomPercentage * 100).toFixed(0)}
+                      %
+                    </span>
+                  </div>
+                  <Slider
+                    value={[randomPercentage]}
+                    min={0}
+                    max={0.5}
+                    step={0.01}
+                    onValueChange={([v]) => setRandomPercentage(v)}
+                    className="py-1"
+                  />
+                </div>
+
+                {/* Grid Size */}
+                <div className="space-y-4">
+                  <Label className="text-xs">{t('sceneDimensions')}</Label>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-[10px] text-muted-foreground">{t('width')}</span>
+                      <span className="text-[10px] font-mono">{sceneWidth}</span>
+                    </div>
+                    <Slider
+                      value={[sceneWidth]}
+                      min={128}
+                      max={2048}
+                      step={128}
+                      onValueChange={([v]) => setSceneWidth(v)}
+                      className="py-1"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-[10px] text-muted-foreground">{t('height')}</span>
+                      <span className="text-[10px] font-mono">{sceneHeight}</span>
+                    </div>
+                    <Slider
+                      value={[sceneHeight]}
+                      min={128}
+                      max={2048}
+                      step={128}
+                      onValueChange={([v]) => setSceneHeight(v)}
+                      className="py-1"
+                    />
+                  </div>
+                </div>
+                {/* Colors */}
+                <div className="space-y-3 pt-2">
+                  <Label className="text-xs flex items-center gap-2">
+                    <Palette className="h-3 w-3" />
+                    {' '}
+                    {t('colors')}
+                  </Label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <span className="text-[10px] text-muted-foreground block">{t('alive')}</span>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={aliveColor}
+                          onChange={e => setAliveColor(e.target.value)}
+                          className="h-6 w-8 rounded cursor-pointer border-none bg-transparent p-0"
+                        />
+                        <span className="text-[10px] font-mono text-muted-foreground">{aliveColor}</span>
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] text-muted-foreground block">{t('dead')}</span>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={deadColor}
+                          onChange={e => setDeadColor(e.target.value)}
+                          className="h-6 w-8 rounded cursor-pointer border-none bg-transparent p-0"
+                        />
+                        <span className="text-[10px] font-mono text-muted-foreground">{deadColor}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Toggles */}
+                <div className="space-y-3 pt-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs text-muted-foreground flex items-center gap-2">
+                      <Grid3X3 className="h-3 w-3" />
+                      {' '}
+                      {t('showGrid')}
+                    </Label>
+                    <Switch checked={showGrid} onCheckedChange={toggleGrid} className="scale-75" />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs text-muted-foreground flex items-center gap-2">
+                      <Activity className="h-3 w-3" />
+                      {' '}
+                      {t('showStats')}
+                    </Label>
+                    <Switch checked={showStats} onCheckedChange={toggleStats} className="scale-75" />
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* System Settings */}
+            <AccordionItem value="settings" className="border-none">
+              <AccordionTrigger className="text-sm hover:no-underline py-3">
+                <div className="flex items-center gap-2">
+                  <Settings className="h-4 w-4 text-teal-500" />
+                  <span>{t('settings')}</span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="space-y-6 pt-2">
+                {/* Theme */}
+                <div className="space-y-3">
+                  <Label className="text-xs flex items-center gap-2">
+                    {theme === 'dark' ? <Moon className="h-3 w-3" /> : <Sun className="h-3 w-3" />}
+                    {' '}
+                    {t('themeMode')}
+                  </Label>
+                  <Select value={theme} onValueChange={setTheme}>
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue placeholder={t('selectTheme')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="light">{t('themes.light')}</SelectItem>
+                      <SelectItem value="dark">{t('themes.dark')}</SelectItem>
+                      <SelectItem value="system">{t('themes.system')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Language */}
+                <div className="space-y-3">
+                  <Label className="text-xs flex items-center gap-2">
+                    <Languages className="h-3 w-3" />
+                    {' '}
+                    {t('language')}
+                  </Label>
+                  <Select value={locale} onValueChange={handleLanguageChange}>
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue placeholder={t('selectLanguage')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="en">{t('languages.en')}</SelectItem>
+                      <SelectItem value="zh">{t('languages.zh')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </AccordionContent>
             </AccordionItem>
 
@@ -335,7 +375,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="text-[10px] text-muted-foreground leading-relaxed">
           <strong className="text-teal-500">Game of Life</strong>
           {' '}
-          is a cellular automaton devised by John Horton Conway. Cells live or die based on their neighbors.
+          {t('footer')}
         </div>
       </div>
 

@@ -16,7 +16,7 @@ const LifeGame2D: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null)
 
   // UI State
-  const [speed, setSpeed] = useState<number>(30)
+  const [speed, setSpeed] = useState<number>(5)
   const [brushSize] = useState<number>(0.01)
   const [drawMode, setDrawMode] = useState<boolean>(true)
   const [activePrefab, setActivePrefab] = useState<PrefabData | null>(null)

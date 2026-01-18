@@ -10,7 +10,7 @@ import { GameState } from '../types'
 export class GameEngine {
   // State
   private gameState: GameState = GameState.STOPPED
-  private speed: number = 30
+  private speed: number = 5
   private brushSize: number = 0.01
   private drawMode: boolean = true
   private textureWidth: number = TEXTURE_SIZE
@@ -171,7 +171,7 @@ export class GameEngine {
         uColorAlive: { value: new THREE.Vector3(...COLOR_ALIVE) },
         uColorDead: { value: new THREE.Vector3(...COLOR_DEAD) },
         uResolution: { value: new THREE.Vector2(this.textureWidth, this.textureHeight) },
-        uGridVisible: { value: 0.0 },
+        uGridVisible: { value: 1.0 },
       },
       vertexShader: VERTEX_SHADER,
       fragmentShader: RENDER_FRAGMENT_SHADER,
@@ -346,7 +346,6 @@ export class GameEngine {
     // Use async read if available, otherwise sync (which might stutter)
     try {
       if ('readRenderTargetPixelsAsync' in this.renderer) {
-        // @ts-expect-error - Three.js types might not be up to date for this method
         const pixelBuffer = await this.renderer.readRenderTargetPixelsAsync(this.fboA, 0, 0, width, height, buffer)
         if (pixelBuffer) {
           this.countCells(pixelBuffer as Float32Array)

@@ -1,0 +1,56 @@
+{
+  "Game": {
+    "title": "Game of Life",
+    "subtitle": "Conway's Game of Life"
+  },
+  "Stats": {
+    "title": "Live Statistics",
+    "generation": "Generation",
+    "alive": "Alive",
+    "dead": "Dead",
+    "gridSize": "Grid Size"
+  },
+  "Controls": {
+    "play": "Play",
+    "pause": "Pause",
+    "clear": "Clear Board",
+    "random": "Randomize",
+    "drawOn": "Draw Mode On",
+    "drawOff": "Draw Mode Off",
+    "zoomIn": "Zoom In",
+    "zoomOut": "Zoom Out",
+    "resetView": "Reset View",
+    "fullscreen": "Fullscreen"
+  },
+  "Sidebar": {
+    "parameters": "Parameters",
+    "settings": "System Settings",
+    "layouts": "Default Layouts",
+    "actions": "Quick Actions",
+    "speed": "Simulation Speed",
+    "gensPerSecond": "gen/s",
+    "randomFill": "Random Fill",
+    "sceneDimensions": "Scene Dimensions",
+    "width": "Width",
+    "height": "Height",
+    "colors": "Colors",
+    "alive": "Alive",
+    "dead": "Dead",
+    "showGrid": "Show Grid",
+    "showStats": "Show Statistics",
+    "themeMode": "Theme Mode",
+    "language": "Language",
+    "selectTheme": "Select theme",
+    "selectLanguage": "Select language",
+    "themes": {
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "languages": {
+      "en": "English",
+      "zh": "Chinese"
+    },
+    "footer": "is a cellular automaton devised by John Horton Conway. Cells live or die based on their neighbors."
+  }
+}
