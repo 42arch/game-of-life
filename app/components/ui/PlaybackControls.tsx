@@ -1,9 +1,11 @@
-import { Eraser, MousePointer2, Pause, Play, Shuffle } from 'lucide-react'
+import { Eraser, MousePointer2, Pause, Play, Shuffle, Zap } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from './button'
+import { Popover, PopoverContent, PopoverTrigger } from './popover'
 import { Separator } from './separator'
+import { Slider } from './slider'
 
 interface PlaybackControlsProps {
   isRunning: boolean
@@ -12,6 +14,8 @@ interface PlaybackControlsProps {
   onRandom: () => void
   drawMode: boolean
   onToggleDrawMode: () => void
+  speed: number
+  onSpeedChange: (speed: number) => void
 }
 
 export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
@@ -21,6 +25,8 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
   onRandom,
   drawMode,
   onToggleDrawMode,
+  speed,
+  onSpeedChange,
 }) => {
   const t = useTranslations('Controls')
 
@@ -43,6 +49,40 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
       </Button>
 
       <Separator orientation="vertical" className="h-8 mx-2 bg-border" />
+
+      {/* Speed Control */}
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent"
+            title={t('speed')}
+          >
+            <Zap className="h-4 w-4" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-40 p-3" side="top" sideOffset={10}>
+          <div className="flex flex-col gap-2">
+            <div className="flex justify-between items-center">
+              <span className="text-[10px] font-medium text-muted-foreground">{t('speed')}</span>
+              <span className="text-[10px] font-mono">
+                {speed}
+                {' '}
+                {t('gensPerSecond')}
+              </span>
+            </div>
+            <Slider
+              value={[speed]}
+              min={1}
+              max={60}
+              step={1}
+              onValueChange={([v]) => onSpeedChange(v)}
+              className="py-1"
+            />
+          </div>
+        </PopoverContent>
+      </Popover>
 
       {/* Right Controls */}
       <div className="flex items-center gap-1">

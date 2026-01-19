@@ -18,6 +18,8 @@
   "Controls": {
     "play": "播放",
     "pause": "暂停",
+    "speed": "速度",
+    "gensPerSecond": "代/秒",
     "clear": "清空画布",
     "random": "随机生成",
     "drawOn": "绘图模式开启",

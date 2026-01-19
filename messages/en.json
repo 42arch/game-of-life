@@ -18,6 +18,8 @@
   "Controls": {
     "play": "Play",
     "pause": "Pause",
+    "speed": "Speed",
+    "gensPerSecond": "gen/s",
     "clear": "Clear Board",
     "random": "Randomize",
     "drawOn": "Draw Mode On",

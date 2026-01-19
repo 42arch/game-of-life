@@ -19,7 +19,7 @@ const LifeGame2D: React.FC = () => {
   // UI State
   const [speed, setSpeed] = useState<number>(4)
   const [brushSize, setBrushSize] = useState<number>(2)
-  const [drawMode, setDrawMode] = useState<boolean>(true)
+  const [drawMode, setDrawMode] = useState<boolean>(false)
   const [activePrefab, setActivePrefab] = useState<PrefabData | null>(null)
 
   // Settings State
@@ -147,6 +147,8 @@ const LifeGame2D: React.FC = () => {
             onRandom={resetGame}
             drawMode={drawMode}
             onToggleDrawMode={() => setDrawMode(!drawMode)}
+            speed={speed}
+            onSpeedChange={setSpeed}
           />
         </div>
 
