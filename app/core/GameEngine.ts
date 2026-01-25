@@ -12,8 +12,8 @@ export class GameEngine {
   // State
   private gameState: GameState = GameState.STOPPED
   private speed: number = 5
-  private brushSize: number = 0.01
-  private drawMode: boolean = true
+  private brushSize: number = 0.001
+  private drawMode: boolean = false
   private textureWidth: number = TEXTURE_SIZE
   private textureHeight: number = TEXTURE_SIZE
   private randomPercentage: number = 0.2
@@ -232,6 +232,7 @@ export class GameEngine {
     }
     this.controls.minZoom = 0.5
     this.controls.maxZoom = 50
+    this.controls.enablePan = !this.drawMode
 
     // 7. Resize Observer
     this.resizeObserver = new ResizeObserver(() => {
@@ -332,8 +333,8 @@ export class GameEngine {
     this.displayMaterial.uniforms.tMap.value = this.fboA.texture
     this.renderer.render(this.scene, this.camera)
 
-    // Update Stats (Throttle to every 1000ms)
-    if (time - this.lastStatsUpdate > 1000 && this.onStatsUpdate && this.renderer && this.fboA && !this.isUpdatingStats) {
+    // Update Stats
+    if (this.onStatsUpdate && this.renderer && this.fboA && !this.isUpdatingStats) {
       this.lastStatsUpdate = time
       this.updateStats()
     }
@@ -474,6 +475,9 @@ export class GameEngine {
 
   public setDrawMode(mode: boolean) {
     this.drawMode = mode
+    if (this.controls) {
+      this.controls.enablePan = !mode
+    }
     // Reset drawing state if mode changes
     if (!mode)
       this.isDrawing = false

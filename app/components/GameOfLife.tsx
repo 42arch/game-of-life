@@ -3,6 +3,7 @@
 import type { PrefabData } from '../constants'
 import { useTheme } from 'next-themes'
 import React, { useEffect, useRef, useState } from 'react'
+import { cn } from '@/lib/utils'
 import { TEXTURE_SIZE } from '../constants'
 import { useLifeGameEngine } from '../hooks/useLifeGameEngine'
 import { PREFABS } from '../prefabs'
@@ -18,7 +19,7 @@ const LifeGame2D: React.FC = () => {
 
   // UI State
   const [speed, setSpeed] = useState<number>(4)
-  const [brushSize, setBrushSize] = useState<number>(2)
+  const [brushSize, setBrushSize] = useState<number>(1)
   const [drawMode, setDrawMode] = useState<boolean>(false)
   const [activePrefab, setActivePrefab] = useState<PrefabData | null>(null)
 
@@ -124,14 +125,17 @@ const LifeGame2D: React.FC = () => {
       {/* Canvas Container */}
       <div
         ref={containerRef}
-        className="relative flex-grow h-full overflow-hidden bg-black/90"
+        className="relative grow h-full overflow-hidden bg-black/90"
         onDragOver={handleDragOver}
         onDrop={handleDrop}
         onDragLeave={handleDragLeave}
       >
         <div
           ref={mountRef}
-          className="w-full h-full cursor-crosshair touch-none"
+          className={cn(
+            'w-full h-full touch-none',
+            drawMode ? 'cursor-crosshair' : 'cursor-default',
+          )}
           onPointerMove={handlePointer}
           onPointerDown={handlePointer}
           onPointerUp={handlePointer}
